@@ -1,0 +1,33 @@
+{
+	"port": 6667,
+	// "nickname": "A default nickname",
+
+	/**
+	 * Show all raw messages, mainly useful for debugging:
+	 */
+
+	"show_all_raw_messages": false,
+
+	/**
+	 * Show the host in messages, alongside the nickname:
+	 */
+
+	"show_host_in_messages": false,
+
+	/**
+	 * These values aren't yet implemented, but are ideas for things
+	 * that might be useful:
+	 */
+
+	/**
+	 * Show an extra panel for commands and messages to be typed into:
+	 */
+
+	"irc_commands_panel": false,
+
+	/**
+	 * Allow commands and messages to be typed into the main window:
+	 */
+
+	"irc_commands_window": true
+}
