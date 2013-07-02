@@ -36,6 +36,8 @@ New feature requests, bugs and of course pull requests will all be managed via t
 
 Code is formatted with PEP8 with E501 turned off (i.e., the default settings for `SublimeLinter`).
 
+GitFlow is used for branching and preparing releases.
+
 ### Architecture
 
 The client tries to fit in with Sublime Text's architecture as much as possible. So for example, an IRC window is simply a document with the IRC syntax type, which is how things like user names and status messages get their appearance.
