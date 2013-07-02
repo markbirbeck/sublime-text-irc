@@ -38,11 +38,11 @@ Code is formatted with PEP8 with E501 turned off (i.e., the default settings for
 
 GitFlow is used for branching and preparing releases.
 
-### Architecture
+## Architecture
 
 The client tries to fit in with Sublime Text's architecture as much as possible. So for example, an IRC window is simply a document with the IRC syntax type, which is how things like user names and status messages get their appearance.
 
-### Limitations
+## Limitations
 
 The main limitation is that [the prompt is not protected](issues/7)! If you type over it then the plugin won't be able to find the end of the buffer and therefore won't know where to insert text. It should be straightforward to fix, but for now just watch those backspaces.
 
