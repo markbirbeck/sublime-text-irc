@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string></string>
+	</array>
+	<key>name</key>
+	<string>IRC</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>comment</key>
+			<string>The person who sent a message.</string>
+			<key>match</key>
+			<string>^\S*?( \(\S*?\))?:</string>
+			<key>name</key>
+			<string>string.text.irc</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>A private message.</string>
+			<key>match</key>
+			<string>^PRIVMSG: .*</string>
+			<key>name</key>
+			<string>string.text.irc</string>
+		</dict>
+		<dict>
+			<key>comment</key>
+			<string>A status message.</string>
+			<key>match</key>
+			<string>^\*\*\* .*</string>
+			<key>name</key>
+			<string>string.text.irc</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>text.markdown.irc</string>
+	<key>uuid</key>
+	<string>77dfc4b1-3c32-44ab-a754-ebd23b7fa79e</string>
+</dict>
+</plist>
