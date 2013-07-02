@@ -44,8 +44,14 @@ The client tries to fit in with Sublime Text's architecture as much as possible.
 
 ## Limitations
 
-The main limitation is that [the prompt is not protected](issues/7)! If you type over it then the plugin won't be able to find the end of the buffer and therefore won't know where to insert text. It should be straightforward to fix, but for now just watch those backspaces.
+The main limitation is that [the prompt is not protected](https://github.com/markbirbeck/sublime-text-irc/issues/7)! If you type over it then the plugin won't be able to find the end of the buffer and therefore won't know where to insert text. It should be straightforward to fix, but for now just watch those backspaces.
+
+## Acknowledgements
+
+Making use of the excellent [Python IRC library](https://pypi.python.org/pypi/irc/) from Joel Rosdahl and Jason R. Coombs.
 
 ## Changelog
+
+2013-07-02 Some README changes. (v0.2)
 
 2013-07-02 Initial release. (v0.1)
