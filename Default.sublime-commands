@@ -1,0 +1,40 @@
+/**
+ * To create an IRC connection command set the command to 'irc', specify a
+ * caption, and provide the parameters for the service you want to connect
+ * to:
+ *
+ *  {
+ *      "caption": "<whatever you want to appear in the command palette>",
+ *      "command": "irc",
+ *      "args": {
+ *          ...
+ *      }
+ *  }
+ *
+ * The arguments block needs to at least provide a server and target; if
+ * no port is provided it will default to 6667, and if no nickname is
+ * provided it will first try to get a nickname value from
+ * IRC.sublime-settings, and if there is still no value then the login
+ * name on your operating system will be used:
+ */
+
+[
+    {
+        "caption": "IRC: #sublimetext",
+        "command": "irc",
+        "args": {
+            "name": "#sublimetext",
+            "server": "irc.freenode.net",
+            "target": "#sublimetext",
+        }
+    },
+    {
+        "caption": "IRC: Plugin Test Room",
+        "command": "irc",
+        "args": {
+            "name": "Plugin Test Room",
+            "server": "irc.freenode.net",
+            "target": "#st3-irc-test-room"
+        }
+    }
+]
