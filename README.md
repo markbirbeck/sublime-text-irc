@@ -52,4 +52,6 @@ Making use of the excellent [Python IRC library](https://pypi.python.org/pypi/ir
 
 ## Changelog
 
+2013-07-02 Some README changes. (v0.2)
+
 2013-07-02 Initial release. (v0.1)
