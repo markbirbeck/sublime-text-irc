@@ -23,6 +23,28 @@ def parse_nickname(nickname):
     return nickname.split('!')
 
 
+# U T I L I T I E S
+# =================
+#
+def get_setting(key, default):
+
+    # Set up the default value:
+    #
+    ret = default
+
+    # Get the current view:
+    #
+    view = sublime.active_window().active_view()
+
+    # Assuming we got the current view ok, then we should be able to pick up
+    # the key from the settings:
+    #
+    if view:
+        ret = view.settings().get(key, default)
+
+    return ret
+
+
 class IRCClient(client.SimpleIRCClient):
 
     def __init__(self, writer, target, nickname, on_disconnect=None, quit_message='Using sublime IRC.'):
@@ -56,8 +78,7 @@ class IRCClient(client.SimpleIRCClient):
 
         def for_threading():
             who, host = parse_nickname(event.source)
-            view = sublime.active_window().active_view()
-            if view and view.settings().get('show_host_in_messages', False):
+            if get_setting('show_host_in_messages', False):
                 self.writer(u'{0} ({1}): {2}'.format(who, host, ' '.join(event.arguments)))
             else:
                 self.writer(u'{0}: {1}'.format(who, ' '.join(event.arguments)))
@@ -103,8 +124,7 @@ class IRCClient(client.SimpleIRCClient):
 
     def on_all_raw_messages(self, connection, event):
 
-        view = sublime.active_window().active_view()
-        if view and view.settings().get('show_all_raw_messages', False):
+        if get_setting('show_all_raw_messages', False):
             self.writer(u'*** ARM {0}'.format(' '.join(event.arguments)))
 
     def on_nicknameinuse(self, connection, event):
