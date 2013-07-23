@@ -120,7 +120,8 @@ class IRCClient(client.SimpleIRCClient):
 
     def on_ping(self, connection, event):
 
-        self.writer(u'*** PING {0}'.format(' '.join(event.arguments)))
+        if get_setting('show_ping_messages', False):
+            self.writer(u'*** PING {0}'.format(' '.join(event.arguments)))
 
     def on_all_raw_messages(self, connection, event):
 

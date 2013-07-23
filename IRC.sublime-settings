@@ -9,6 +9,12 @@
 	"show_all_raw_messages": false,
 
 	/**
+	 * Show ping messages, mainly useful for debugging:
+	 */
+
+	"show_ping_messages": false,
+
+	/**
 	 * Show the host in messages, alongside the nickname:
 	 */
 
