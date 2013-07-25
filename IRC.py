@@ -13,6 +13,8 @@ from imp import reload
 import sublime
 import sublime_plugin
 
+from IRC.utils import get_setting
+
 from .irc_client.irc_console_broker import IrcConsoleBroker
 
 mod_prefix = 'IRC'
@@ -21,8 +23,6 @@ for suffix in ['.irc_client.irc_console_broker', '.irc_client.irc_console_client
     mod = mod_prefix + suffix
     reload(sys.modules[mod])
 
-
-user_settings = sublime.load_settings("IRC.sublime-settings")
 
 # Keep track of the brokers:
 #
@@ -47,10 +47,10 @@ class IrcCommand(sublime_plugin.WindowCommand):
         # if necessary:
         #
         if server is None:
-            server = user_settings.get('server')
+            server = get_setting('server')
 
         if port is None:
-            port = user_settings.get('port', 6667)
+            port = get_setting('port', 6667)
 
         # If no name is provided then make one up from server, port and target:
         #
@@ -60,7 +60,7 @@ class IrcCommand(sublime_plugin.WindowCommand):
         # Get the nickname from the config file if not provided:
         #
         if nickname is None:
-            nickname = user_settings.get('nickname')
+            nickname = get_setting('nickname')
 
             # If we still have no nickname then ask the OS:
             #
