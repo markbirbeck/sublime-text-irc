@@ -52,6 +52,12 @@ Making use of the excellent [Python IRC library](https://pypi.python.org/pypi/ir
 
 ## Changelog
 
+2013-07-25 (v0.3)
+
+* Add /nick, /quit and /connect commands. (@Mimieam)
+* Add optional timestamp to messages. (@Mimieam)
+* Improve syntax highlighting.
+
 2013-07-02 Some README changes. (v0.2)
 
 2013-07-02 Initial release. (v0.1)
