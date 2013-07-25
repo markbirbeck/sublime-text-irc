@@ -11,28 +11,56 @@
     <key>patterns</key>
     <array>
       <dict>
-        <key>comment</key>
-        <string>The person who sent a message.</string>
-        <key>match</key>
-        <string>^\S*?( \(\S*?\))?:</string>
-        <key>name</key>
-        <string>string constant.text.irc.message.sender</string>
-      </dict>
-      <dict>
-        <key>comment</key>
-        <string>A private message.</string>
-        <key>match</key>
-        <string>^PRIVMSG: .*</string>
-        <key>name</key>
-        <string>keyword.text.irc.message.private</string>
-      </dict>
-      <dict>
-        <key>comment</key>
-        <string>A status message.</string>
-        <key>match</key>
-        <string>^\*\*\* .*</string>
-        <key>name</key>
-        <string>comment.text.irc.message.status</string>
+        <key>begin</key>
+        <!--
+          There may or may not be a timestamp:
+          -->
+        <string>^(\[\d\d\:\d\d\]\s)?</string>
+        <key>end</key>
+        <string>$</string>
+        <key>patterns</key>
+        <array>
+        <dict>
+          <key>comment</key>
+          <string>A private message.</string>
+          <key>match</key>
+          <string>PRIVMSG: .*</string>
+          <key>name</key>
+          <string>keyword.text.irc.message.private</string>
+        </dict>
+        <dict>
+          <key>comment</key>
+          <string>A private notice.</string>
+          <key>match</key>
+          <string>Private Notice: .*</string>
+          <key>name</key>
+          <string>comment.text.irc.message.private</string>
+        </dict>
+        <dict>
+          <key>comment</key>
+          <string>A status message.</string>
+          <key>match</key>
+          <string>\*\*\* .*</string>
+          <key>name</key>
+          <string>comment.text.irc.message.status</string>
+        </dict>
+        <dict>
+          <key>comment</key>
+          <string>The person who sent a message.</string>
+          <key>match</key>
+          <string>\S*?( \(\S*?\))?:</string>
+          <key>name</key>
+          <string>string constant.text.irc.message.sender</string>
+        </dict>
+        <dict>
+          <key>comment</key>
+          <string>An ordinary message</string>
+          <key>match</key>
+          <string>.*</string>
+          <key>name</key>
+          <string>string.text.irc.message.public</string>
+        </dict>
+        </array>
       </dict>
     </array>
     <key>scopeName</key>
