@@ -3,6 +3,8 @@
 #
 import sublime
 
+from IRC.utils import get_setting
+
 
 class ConsoleClient(object):
 
@@ -99,6 +101,13 @@ class ConsoleClient(object):
         return self._view.find('^{0}'.format(prompt), 0)
 
     def write(self, msg):
+
+        # If we should show the time then add it before the message. If this
+        # layout ever gets changed then make sure to update the syntax files:
+        #
+        if get_setting('show_timestamp_in_messages'):
+            import time
+            msg = '[' + time.strftime('%H:%M') + '] ' + msg
 
         # Add the message just before the prompt:
         #

@@ -4,6 +4,8 @@ import functools
 
 import sublime
 
+from IRC.utils import get_setting
+
 from .irc import client
 
 
@@ -21,28 +23,6 @@ def main_thread(callback, *args, **kwargs):
 def parse_nickname(nickname):
 
     return nickname.split('!')
-
-
-# U T I L I T I E S
-# =================
-#
-def get_setting(key, default):
-
-    # Set up the default value:
-    #
-    ret = default
-
-    # Get the current view:
-    #
-    view = sublime.active_window().active_view()
-
-    # Assuming we got the current view ok, then we should be able to pick up
-    # the key from the settings:
-    #
-    if view:
-        ret = view.settings().get(key, default)
-
-    return ret
 
 
 class IRCClient(client.SimpleIRCClient):
@@ -104,7 +84,7 @@ class IRCClient(client.SimpleIRCClient):
     def on_join(self, connection, event):
 
         who, host = parse_nickname(event.source)
-        if who == self.nickname:
+        if who == self.get_nickname():
             who_joined = u'You have'
         else:
             who_joined = u'{0} ({1}) has'.format(who, host)
@@ -139,8 +119,32 @@ class IRCClient(client.SimpleIRCClient):
 
         self.connection.privmsg(self.target, msg)
 
+    def get_nickname(self):
+
+        return self.connection.get_nickname()
+
     # Commands:
     #
     def command(self, command):
 
-        self.write(command)
+        conn = self.connection
+
+        tokens = command.split()
+        command = tokens[0].lower()
+
+        # The /nick command either returns the current nickname or sets
+        # a new one:
+        #
+        if command == '/nick':
+            if len(tokens) != 2:
+                self.writer(conn.get_nickname())
+            else:
+                conn.nick(tokens[1])
+
+        # The /quit and /connect commands do what they say on the tin:
+        #
+        if command == '/quit':
+            conn.quit(self.quit_message)
+
+        if command == '/connect':
+            conn.reconnect()
