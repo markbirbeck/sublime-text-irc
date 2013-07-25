@@ -84,7 +84,7 @@ class IRCClient(client.SimpleIRCClient):
     def on_join(self, connection, event):
 
         who, host = parse_nickname(event.source)
-        if who == self.nickname:
+        if who == self.get_nickname():
             who_joined = u'You have'
         else:
             who_joined = u'{0} ({1}) has'.format(who, host)
@@ -119,8 +119,32 @@ class IRCClient(client.SimpleIRCClient):
 
         self.connection.privmsg(self.target, msg)
 
+    def get_nickname(self):
+
+        return self.connection.get_nickname()
+
     # Commands:
     #
     def command(self, command):
 
-        self.write(command)
+        conn = self.connection
+
+        tokens = command.split()
+        command = tokens[0].lower()
+
+        # The /nick command either returns the current nickname or sets
+        # a new one:
+        #
+        if command == '/nick':
+            if len(tokens) != 2:
+                self.writer(conn.get_nickname())
+            else:
+                conn.nick(tokens[1])
+
+        # The /quit and /connect commands do what they say on the tin:
+        #
+        if command == '/quit':
+            conn.quit(self.quit_message)
+
+        if command == '/connect':
+            conn.reconnect()
