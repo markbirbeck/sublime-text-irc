@@ -16,7 +16,7 @@
         <key>match</key>
         <string>^\S*?( \(\S*?\))?:</string>
         <key>name</key>
-        <string>string.text.irc</string>
+        <string>string constant.text.irc.message.sender</string>
       </dict>
       <dict>
         <key>comment</key>
@@ -24,7 +24,7 @@
         <key>match</key>
         <string>^PRIVMSG: .*</string>
         <key>name</key>
-        <string>string.text.irc</string>
+        <string>keyword.text.irc.message.private</string>
       </dict>
       <dict>
         <key>comment</key>
@@ -32,7 +32,7 @@
         <key>match</key>
         <string>^\*\*\* .*</string>
         <key>name</key>
-        <string>string.text.irc</string>
+        <string>comment.text.irc.message.status</string>
       </dict>
     </array>
     <key>scopeName</key>
