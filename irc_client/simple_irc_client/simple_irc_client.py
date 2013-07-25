@@ -4,6 +4,8 @@ import functools
 
 import sublime
 
+from IRC.utils import get_setting
+
 from .irc import client
 
 
@@ -21,28 +23,6 @@ def main_thread(callback, *args, **kwargs):
 def parse_nickname(nickname):
 
     return nickname.split('!')
-
-
-# U T I L I T I E S
-# =================
-#
-def get_setting(key, default):
-
-    # Set up the default value:
-    #
-    ret = default
-
-    # Get the current view:
-    #
-    view = sublime.active_window().active_view()
-
-    # Assuming we got the current view ok, then we should be able to pick up
-    # the key from the settings:
-    #
-    if view:
-        ret = view.settings().get(key, default)
-
-    return ret
 
 
 class IRCClient(client.SimpleIRCClient):
