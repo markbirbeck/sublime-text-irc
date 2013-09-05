@@ -1,9 +1,0 @@
-[
-    {
-        "keys": ["enter"],
-        "command": "commit_msg",
-        "context": [
-            { "key": "selector", "operator": "equal", "match_all": true, "operand": "text.markdown.irc" }
-        ]
-    }
-]
