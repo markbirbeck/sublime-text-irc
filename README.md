@@ -52,6 +52,10 @@ Making use of the excellent [Python IRC library](https://pypi.python.org/pypi/ir
 
 ## Changelog
 
+2014-03-26 (v0.4)
+
+* Bump the IRC library to version 8.5.4.
+ 
 2013-07-25 (v0.3)
 
 * Add /nick, /quit and /connect commands. (@Mimieam)
