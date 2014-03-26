@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 1999-2002  Joel Rosdahl
-# Copyright © 2011-2012 Jason R. Coombs
+# Copyright © 2011-2013 Jason R. Coombs
 
 """
 Internet Relay Chat (IRC) protocol client library.
@@ -47,7 +47,7 @@ Current limitations:
 .. [IRC specifications] http://www.irchelp.org/irchelp/rfc/
 """
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division
 
 import bisect
 import re
@@ -57,11 +57,13 @@ import string
 import time
 import struct
 import logging
-import itertools
 import threading
 import abc
 import collections
 import functools
+import itertools
+
+import six
 
 try:
     import pkg_resources
@@ -81,9 +83,10 @@ log = logging.getLogger(__name__)
 
 # set the version tuple
 try:
-    VERSION = tuple(int(res) for res in re.findall('\d+',
-        pkg_resources.require('irc')[0].version))
+    VERSION_STRING = pkg_resources.require('irc')[0].version
+    VERSION = tuple(int(res) for res in re.findall('\d+', VERSION_STRING))
 except Exception:
+    VERSION_STRING = 'unknown'
     VERSION = ()
 
 # TODO
@@ -551,96 +554,97 @@ class ServerConnection(Connection):
 
         self.buffer.feed(new_data)
 
+        # process each non-empty line after logging all lines
         for line in self.buffer:
             log.debug("FROM SERVER: %s", line)
+            if not line: continue
+            self._process_line(line)
 
-            if not line:
-                continue
+    def _process_line(self, line):
+        prefix = None
+        command = None
+        arguments = None
+        self._handle_event(Event("all_raw_messages",
+                                 self.get_server_name(),
+                                 None,
+                                 [line]))
 
-            prefix = None
-            command = None
-            arguments = None
-            self._handle_event(Event("all_raw_messages",
-                                     self.get_server_name(),
-                                     None,
-                                     [line]))
+        m = _rfc_1459_command_regexp.match(line)
+        if m.group("prefix"):
+            prefix = m.group("prefix")
+            if not self.real_server_name:
+                self.real_server_name = prefix
 
-            m = _rfc_1459_command_regexp.match(line)
-            if m.group("prefix"):
-                prefix = m.group("prefix")
-                if not self.real_server_name:
-                    self.real_server_name = prefix
+        if m.group("command"):
+            command = m.group("command").lower()
 
-            if m.group("command"):
-                command = m.group("command").lower()
+        if m.group("argument"):
+            a = m.group("argument").split(" :", 1)
+            arguments = a[0].split()
+            if len(a) == 2:
+                arguments.append(a[1])
 
-            if m.group("argument"):
-                a = m.group("argument").split(" :", 1)
-                arguments = a[0].split()
-                if len(a) == 2:
-                    arguments.append(a[1])
+        # Translate numerics into more readable strings.
+        command = events.numeric.get(command, command)
 
-            # Translate numerics into more readable strings.
-            command = events.numeric.get(command, command)
-
-            if command == "nick":
-                if NickMask(prefix).nick == self.real_nickname:
-                    self.real_nickname = arguments[0]
-            elif command == "welcome":
-                # Record the nickname in case the client changed nick
-                # in a nicknameinuse callback.
+        if command == "nick":
+            if NickMask(prefix).nick == self.real_nickname:
                 self.real_nickname = arguments[0]
-            elif command == "featurelist":
-                self.features.load(arguments)
+        elif command == "welcome":
+            # Record the nickname in case the client changed nick
+            # in a nicknameinuse callback.
+            self.real_nickname = arguments[0]
+        elif command == "featurelist":
+            self.features.load(arguments)
 
-            if command in ["privmsg", "notice"]:
-                target, message = arguments[0], arguments[1]
-                messages = _ctcp_dequote(message)
+        if command in ["privmsg", "notice"]:
+            target, message = arguments[0], arguments[1]
+            messages = _ctcp_dequote(message)
 
-                if command == "privmsg":
-                    if is_channel(target):
-                        command = "pubmsg"
-                else:
-                    if is_channel(target):
-                        command = "pubnotice"
-                    else:
-                        command = "privnotice"
-
-                for m in messages:
-                    if isinstance(m, tuple):
-                        if command in ["privmsg", "pubmsg"]:
-                            command = "ctcp"
-                        else:
-                            command = "ctcpreply"
-
-                        m = list(m)
-                        log.debug("command: %s, source: %s, target: %s, "
-                            "arguments: %s", command, prefix, target, m)
-                        self._handle_event(Event(command, NickMask(prefix), target, m))
-                        if command == "ctcp" and m[0] == "ACTION":
-                            self._handle_event(Event("action", prefix, target, m[1:]))
-                    else:
-                        log.debug("command: %s, source: %s, target: %s, "
-                            "arguments: %s", command, prefix, target, [m])
-                        self._handle_event(Event(command, NickMask(prefix), target, [m]))
+            if command == "privmsg":
+                if is_channel(target):
+                    command = "pubmsg"
             else:
-                target = None
-
-                if command == "quit":
-                    arguments = [arguments[0]]
-                elif command == "ping":
-                    target = arguments[0]
+                if is_channel(target):
+                    command = "pubnotice"
                 else:
-                    target = arguments[0]
-                    arguments = arguments[1:]
+                    command = "privnotice"
 
-                if command == "mode":
-                    if not is_channel(target):
-                        command = "umode"
+            for m in messages:
+                if isinstance(m, tuple):
+                    if command in ["privmsg", "pubmsg"]:
+                        command = "ctcp"
+                    else:
+                        command = "ctcpreply"
 
-                log.debug("command: %s, source: %s, target: %s, "
-                    "arguments: %s", command, prefix, target, arguments)
-                self._handle_event(Event(command, NickMask(prefix), target, arguments))
+                    m = list(m)
+                    log.debug("command: %s, source: %s, target: %s, "
+                        "arguments: %s", command, prefix, target, m)
+                    self._handle_event(Event(command, NickMask(prefix), target, m))
+                    if command == "ctcp" and m[0] == "ACTION":
+                        self._handle_event(Event("action", prefix, target, m[1:]))
+                else:
+                    log.debug("command: %s, source: %s, target: %s, "
+                        "arguments: %s", command, prefix, target, [m])
+                    self._handle_event(Event(command, NickMask(prefix), target, [m]))
+        else:
+            target = None
+
+            if command == "quit":
+                arguments = [arguments[0]]
+            elif command == "ping":
+                target = arguments[0]
+            else:
+                target = arguments[0]
+                arguments = arguments[1:]
+
+            if command == "mode":
+                if not is_channel(target):
+                    command = "umode"
+
+            log.debug("command: %s, source: %s, target: %s, "
+                "arguments: %s", command, prefix, target, arguments)
+            self._handle_event(Event(command, NickMask(prefix), target, arguments))
 
     def _handle_event(self, event):
         """[Internal]"""
@@ -971,14 +975,14 @@ class Throttler(object):
         self.reset()
 
     def reset(self):
-        self.start = time.time()
-        self.calls = itertools.count()
+        self.last_called = 0
 
     def __call__(self, *args, **kwargs):
-        # ensure max_rate >= next(self.calls) / (elapsed + must_wait)
-        elapsed = time.time() - self.start
-        must_wait = next(self.calls) / self.max_rate - elapsed
+        # ensure at least 1/max_rate seconds from last call
+        elapsed = time.time() - self.last_called
+        must_wait = 1 / self.max_rate - elapsed
         time.sleep(max(0, must_wait))
+        self.last_called = time.time()
         return self.func(*args, **kwargs)
 
 
@@ -987,7 +991,8 @@ class DCCConnectionError(IRCError):
 
 
 class DCCConnection(Connection):
-    """This class represents a DCC connection.
+    """
+    A DCC (Direct Client Connection).
 
     DCCConnection objects are instantiated by calling the dcc
     method on an IRC object.
@@ -1103,6 +1108,8 @@ class DCCConnection(Connection):
 
             if len(self.buffer) > 2 ** 14:
                 # Bad peer! Naughty peer!
+                log.info("Received >16k from a peer without a newline; "
+                    "disconnecting.")
                 self.disconnect()
                 return
         else:
@@ -1120,21 +1127,27 @@ class DCCConnection(Connection):
                 self,
                 Event(command, prefix, target, arguments))
 
-    def privmsg(self, string):
-        """Send data to DCC peer.
-
-        The string will be padded with appropriate LF if it's a DCC
-        CHAT session.
+    def privmsg(self, text):
         """
-        bytes = string.encode('utf-8')
+        Send text to DCC peer.
+
+        The text will be padded with a newline if it's a DCC CHAT session.
+        """
+        if self.dcctype == 'chat':
+            text += '\n'
+        bytes = text.encode('utf-8')
+        return self.send_bytes(bytes)
+
+    def send_bytes(self, bytes):
+        """
+        Send data to DCC peer.
+        """
         try:
             self.socket.send(bytes)
-            if self.dcctype == "chat":
-                self.socket.send("\n")
-            log.debug("TO PEER: %s\n", string)
+            log.debug("TO PEER: %r\n", bytes)
         except socket.error:
-            # Ouch!
             self.disconnect("Connection reset by peer.")
+
 
 class SimpleIRCClient(object):
     """A simple single-server IRC client class.
@@ -1216,7 +1229,7 @@ class Event(object):
     "An IRC event."
     def __init__(self, type, source, target, arguments=None):
         """
-        Constructor of Event objects.
+        Initialize an Event.
 
         Arguments:
 
@@ -1354,21 +1367,28 @@ def ip_quad_to_numstr(quad):
     packed = struct.pack('BBBB', *bytes)
     return str(struct.unpack('>L', packed)[0])
 
-class NickMask(str):
+class NickMask(six.text_type):
     """
     A nickmask (the source of an Event)
 
     >>> nm = NickMask('pinky!username@example.com')
-    >>> nm.nick
-    'pinky'
+    >>> print(nm.nick)
+    pinky
 
-    >>> nm.host
-    'example.com'
+    >>> print(nm.host)
+    example.com
 
-    >>> nm.user
-    'username'
+    >>> print(nm.user)
+    username
 
-    >>> isinstance(nm, basestring)
+    >>> isinstance(nm, six.text_type)
+    True
+
+    >>> nm = 'красный!red@yahoo.ru'
+    >>> if not six.PY3: nm = nm.decode('utf-8')
+    >>> nm = NickMask(nm)
+
+    >>> isinstance(nm.nick, six.text_type)
     True
     """
     @classmethod

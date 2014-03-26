@@ -5,13 +5,16 @@ import time
 
 import pytest
 import mock
+import six
 
 import irc.client
 
 def test_version():
 	assert 'VERSION' in vars(irc.client)
+	assert 'VERSION_STRING' in vars(irc.client)
 	assert isinstance(irc.client.VERSION, tuple)
 	assert irc.client.VERSION, "No VERSION detected."
+	assert isinstance(irc.client.VERSION_STRING, six.string_types)
 
 @mock.patch('irc.connection.socket')
 def test_privmsg_sends_msg(socket_mod):
@@ -55,7 +58,16 @@ class TestThrottler(object):
 		while time.time() < deadline:
 			limited_next(counter)
 		# ensure the counter was advanced about 30 times
-		assert 29 <= next(counter) <= 31
+		assert 29 <= next(counter) <= 32
+
+		# ensure that another burst of calls after some idle period will also
+		# get throttled
+		time.sleep(1)
+		deadline = time.time() + 1
+		counter = itertools.count()
+		while time.time() < deadline:
+			limited_next(counter)
+		assert 29 <= next(counter) <= 32
 
 	def test_reconstruct_unwraps(self):
 		"""
