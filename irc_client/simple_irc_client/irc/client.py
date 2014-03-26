@@ -63,7 +63,7 @@ import collections
 import functools
 import itertools
 
-import six
+from . import six
 
 try:
     import pkg_resources

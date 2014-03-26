@@ -3,7 +3,7 @@ from __future__ import absolute_import, unicode_literals
 import re
 import string
 
-import six
+from . import six
 
 # from jaraco.util.string
 class FoldedCase(six.text_type):
