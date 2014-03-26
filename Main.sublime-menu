@@ -20,6 +20,7 @@
                 "args": {"file": "${packages}/User/IRC.sublime-settings"},
                 "caption": "Settings – User"
               },
+              { "caption": "-" },
               {
                 "command": "open_file",
                 "args": {"file": "${packages}/IRC/Default.sublime-commands"},
@@ -30,6 +31,7 @@
                 "args": {"file": "${packages}/User/IRC.sublime-commands"},
                 "caption": "Commands – User"
               },
+              { "caption": "-" },
               {
                 "command": "open_file",
                 "args": {"file": "${packages}/User/IRC/syntax/IRC.tmLanguage"},

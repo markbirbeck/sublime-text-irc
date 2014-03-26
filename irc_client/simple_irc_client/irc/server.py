@@ -74,8 +74,9 @@ import socket
 import select
 import re
 
+import six
+
 from . import client
-from . import _py2_compat
 from . import logging as log_util
 from . import events
 from . import buffer
@@ -110,7 +111,7 @@ class IRCChannel(object):
         self.topic = topic
         self.clients = set()
 
-class IRCClient(_py2_compat.socketserver.BaseRequestHandler):
+class IRCClient(six.moves.socketserver.BaseRequestHandler):
     """
     IRC client connect and command handling. Client connection is handled by
     the `handle` method which sets up a two-way communication with the client.
@@ -127,7 +128,7 @@ class IRCClient(_py2_compat.socketserver.BaseRequestHandler):
         self.send_queue = []        # Messages to send to client (strings)
         self.channels = {}          # Channels the client is in
 
-        _py2_compat.socketserver.BaseRequestHandler.__init__(self, request,
+        six.moves.socketserver.BaseRequestHandler.__init__(self, request,
             client_address, server)
 
     def handle(self):
@@ -170,6 +171,7 @@ class IRCClient(_py2_compat.socketserver.BaseRequestHandler):
 
         self.buffer.feed(data)
         for line in self.buffer:
+            line = line.decode('utf-8')
             self._handle_line(line)
 
     def _handle_line(self, line):
@@ -184,7 +186,7 @@ class IRCClient(_py2_compat.socketserver.BaseRequestHandler):
                     '%s :Unknown command' % command)
             response = handler(params)
         except AttributeError as e:
-            log.error(_py2_compat.str(e))
+            log.error(six.text_type(e))
             raise
         except IRCError as e:
             response = ':%s %s %s' % (self.server.servername, e.code, e.value)
@@ -199,7 +201,7 @@ class IRCClient(_py2_compat.socketserver.BaseRequestHandler):
 
     def _send(self, msg):
         log.debug('to %s: %s', self.client_ident(), msg)
-        self.request.send(msg + '\r\n')
+        self.request.send(msg.encode('utf-8') + b'\r\n')
 
     def handle_nick(self, params):
         """
@@ -452,8 +454,8 @@ class IRCClient(_py2_compat.socketserver.BaseRequestHandler):
             self.realname,
             )
 
-class IRCServer(_py2_compat.socketserver.ThreadingMixIn,
-        _py2_compat.socketserver.TCPServer):
+class IRCServer(six.moves.socketserver.ThreadingMixIn,
+        six.moves.socketserver.TCPServer):
     daemon_threads = True
     allow_reuse_address = True
 
@@ -467,7 +469,7 @@ class IRCServer(_py2_compat.socketserver.ThreadingMixIn,
         self.servername = 'localhost'
         self.channels = {}
         self.clients = {}
-        _py2_compat.socketserver.TCPServer.__init__(self, *args, **kwargs)
+        six.moves.socketserver.TCPServer.__init__(self, *args, **kwargs)
 
 def get_args():
     parser = argparse.ArgumentParser()

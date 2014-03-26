@@ -1,4 +1,4 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # Copyright (C) 1999-2002  Joel Rosdahl
 # Portions Copyright © 2011-2012 Jason R. Coombs
@@ -159,8 +159,14 @@ class SingleServerIRCBot(irc.client.SimpleIRCClient):
         # e.arguments[1] == channel
         # e.arguments[2] == nick list
 
-        ch = e.arguments[1]
-        for nick in e.arguments[2].split():
+        ch_type, channel, nick_list = e.arguments
+
+        if channel == '*':
+            # User is not in any visible channel
+            # http://tools.ietf.org/html/rfc2812#section-3.2.5
+            return
+
+        for nick in nick_list.split():
             nick_modes = []
 
             if nick[0] in self.connection.features.prefix:
@@ -168,9 +174,9 @@ class SingleServerIRCBot(irc.client.SimpleIRCClient):
                 nick = nick[1:]
 
             for mode in nick_modes:
-                self.channels[ch].set_mode(mode, nick)
+                self.channels[channel].set_mode(mode, nick)
 
-            self.channels[ch].add_user(nick)
+            self.channels[channel].add_user(nick)
 
     def _on_nick(self, c, e):
         before = e.source.nick
@@ -221,8 +227,8 @@ class SingleServerIRCBot(irc.client.SimpleIRCClient):
 
         Used when answering a CTCP VERSION request.
         """
-        version='.'.join(irc.client.VERSION) or 'unknown'
-        return "Python irc.bot ({version})".format(version=version)
+        return "Python irc.bot ({version})".format(
+            version=irc.client.VERSION_STRING)
 
     def jump_server(self, msg="Changing servers"):
         """Connect to a new server, possibly disconnecting from the current.
